@@ -41,7 +41,7 @@ export async function filterCleaners(req, res) { // tested
 
     if (price) {
       const [minPrice, maxPrice] = price.split('-');
-      filter.price = { $gte: Number(minPrice), $lte: Number(maxPrice) }; // fixed field
+      filter.hourlyPrice = { $gte: Number(minPrice), $lte: Number(maxPrice) }; // Changed from 'price' to 'hourlyPrice'
     }
 
     if (age) {
@@ -114,6 +114,17 @@ export async function createCleaner(req, res) { //tested
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Check if cleaner already exists
+    const existingCleaner = await Cleaner.findOne({ 
+      $or: [{ username }, { email }] 
+    });
+    
+    if (existingCleaner) {
+      return res.status(400).json({ 
+        message: 'Cleaner with this username or email already exists' 
+      });
+    }
+
     // Hash the password before saving it to the database
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -132,9 +143,21 @@ export async function createCleaner(req, res) { //tested
     });
 
     const savedCleaner = await cleaner.save();
-    res.status(201).json(savedCleaner);
+    
+    // Remove password from response
+    const cleanerResponse = savedCleaner.toObject();
+    delete cleanerResponse.password;
+    
+    res.status(201).json(cleanerResponse);
   } catch (err) {
     console.error('Error in createCleaner controller', err);
+    
+    if (err.code === 11000) {
+      return res.status(400).json({ 
+        message: 'Username or email already exists' 
+      });
+    }
+    
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -157,31 +180,52 @@ export async function deleteCleaner(req, res) { //tested
 };
 
 export async function loginCleaner(req, res) {
-  const {username, password} = req.body;
+  const { username, password } = req.body;
 
-  try{
-    const cleaner = await Cleaner.findOne({username});
+  try {
+    // Validation
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username and password are required' });
+    }
+
+    // Find cleaner by username
+    const cleaner = await Cleaner.findOne({ username });
 
     if (!cleaner) {
-      return res.status(400).json({message: "User not Found"});
+      return res.status(400).json({ message: "User not found" });
     }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, cleaner.password);
-    if (!isMatch){
+    if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
     // Generate JWT token 
     const token = jwt.sign(
-      { id: client._id }, 
-      process.env.JWT_SECRET,  // Use your secret key to sign the token
+      { 
+        id: cleaner._id,
+        role: 'cleaner',
+        username: cleaner.username
+      }, 
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' } // Token expires in 24 hours
     );
 
-    res.json({ token, client });
+    // Remove password from cleaner object before sending response
+    const cleanerResponse = cleaner.toObject();
+    delete cleanerResponse.password;
 
-  }catch(err){
+    res.json({ 
+      message: 'Login successful',
+      token, 
+      cleaner: cleanerResponse 
+    });
+
+  } catch (err) {
     console.error('Error in loginCleaner controller', err);
     res.status(500).json({ message: 'Server error' });
   }
-  
 }
+
 //all controllers are tested and working

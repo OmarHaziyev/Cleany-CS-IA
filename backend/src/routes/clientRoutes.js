@@ -1,7 +1,6 @@
 import express from "express";
 import { createClient, getAllClients, getClientByID, deleteClient, updateClient, loginClient } from "../controllers/clientController.js";
-import { protect } from './middleware/auth.js';
-
+import { protect } from '../middleware/auth.js';
 const clientRouter = express.Router();
 
 
