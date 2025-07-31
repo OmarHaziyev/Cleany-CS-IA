@@ -36,6 +36,11 @@ const CleanerSignup = () => {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  if (formData.age < 18 || formData.age > 80) {
+    alert("Age must be between 18 and 80");
+    return;
+  };
+
   if (Number(formData.hourlyPrice) <= 5) {
     alert("Hourly price must be greater than $5.");
     return;
