@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import axios from 'axios';
 import '../cssFiles/ClientDashboard.css';
 
 const ClientDashboard = () => {
+  const navigate = useNavigate();
   const [cleaners, setCleaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -93,6 +95,14 @@ const ClientDashboard = () => {
     localStorage.removeItem('userType');
     localStorage.removeItem('userData');
     window.location.href = '/';
+  };
+
+  const handleViewProfile = (cleanerId) => {
+    navigate(`/cleaner/${cleanerId}`);
+  };
+
+  const handleBookNow = (cleanerId) => {
+    navigate(`/cleaner/${cleanerId}`);
   };
 
   const renderStars = (rating) => {
@@ -270,10 +280,16 @@ const ClientDashboard = () => {
                       </div>
 
                       <div className="cleaner-actions">
-                        <button className="view-profile-btn">
+                        <button 
+                          onClick={() => handleViewProfile(cleaner._id)}
+                          className="view-profile-btn"
+                        >
                           View Profile
                         </button>
-                        <button className="book-now-btn">
+                        <button 
+                          onClick={() => handleBookNow(cleaner._id)}
+                          className="book-now-btn"
+                        >
                           Book Now
                         </button>
                       </div>

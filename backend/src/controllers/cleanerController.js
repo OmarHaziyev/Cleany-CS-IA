@@ -105,13 +105,43 @@ export async function updateCleaner(req, res) { //tested
   }
 };
 
-export async function createCleaner(req, res) { //tested
+export async function createCleaner(req, res) { //updated with schedule support
     try {
-    const { username, password, name, phoneNumber, email, gender, age, service, schedule, hourlyPrice } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      phoneNumber, 
+      gender, 
+      age, 
+      service, 
+      schedule, 
+      scheduleType,
+      hourlyPrice 
+    } = req.body;
 
     // Validation
-    if (!username || !password || !name || !phoneNumber || !email || !service || !gender || !age || !hourlyPrice) {
+    if (!name || !email || !password || !phoneNumber || !service || !gender || !age || !hourlyPrice || !schedule) {
       return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Generate username from email if not provided
+    const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+
+    // Age validation
+    if (age < 18 || age > 80) {
+      return res.status(400).json({ message: 'Age must be between 18 and 80' });
+    }
+
+    // Price validation
+    if (hourlyPrice < 5) {
+      return res.status(400).json({ message: 'Hourly price must be at least $5' });
+    }
+
+    // Schedule validation - at least one day must be available
+    const hasAvailableDay = Object.values(schedule).some(day => day.available);
+    if (!hasAvailableDay) {
+      return res.status(400).json({ message: 'At least one day must be available in your schedule' });
     }
 
     // Check if cleaner already exists
@@ -121,7 +151,7 @@ export async function createCleaner(req, res) { //tested
     
     if (existingCleaner) {
       return res.status(400).json({ 
-        message: 'Cleaner with this username or email already exists' 
+        message: 'Cleaner with this email already exists' 
       });
     }
 
@@ -131,15 +161,16 @@ export async function createCleaner(req, res) { //tested
 
     const cleaner = new Cleaner({
       username,
-      password: hashedPassword, // Storing the hashed password
+      password: hashedPassword,
       name,
       phoneNumber,
       email,
       gender,
-      age,
-      service,
+      age: parseInt(age),
+      service: Array.isArray(service) ? service : [service],
       schedule,
-      hourlyPrice,
+      scheduleType: scheduleType || 'NORMAL',
+      hourlyPrice: parseFloat(hourlyPrice),
     });
 
     const savedCleaner = await cleaner.save();
@@ -152,9 +183,17 @@ export async function createCleaner(req, res) { //tested
   } catch (err) {
     console.error('Error in createCleaner controller', err);
     
+    // Handle mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ 
+        message: 'Validation error: ' + errors.join(', ')
+      });
+    }
+    
     if (err.code === 11000) {
       return res.status(400).json({ 
-        message: 'Username or email already exists' 
+        message: 'Email already exists' 
       });
     }
     
@@ -188,8 +227,10 @@ export async function loginCleaner(req, res) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
 
-    // Find cleaner by username
-    const cleaner = await Cleaner.findOne({ username });
+    // Find cleaner by username or email
+    const cleaner = await Cleaner.findOne({ 
+      $or: [{ username }, { email: username }]
+    });
 
     if (!cleaner) {
       return res.status(400).json({ message: "User not found" });

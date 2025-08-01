@@ -6,6 +6,7 @@ import LoginPageClient from './pages/LoginPageClient.jsx';
 import CleanerSignup from './pages/CleanerSignup.jsx';
 import ClientSignup from './pages/ClientSignup.jsx';
 import ClientDashboard from './pages/ClientDashboard.jsx';
+import CleanerDetailPage from './pages/CleanerDetailPage.jsx';
 
 const App = () => {
   return (
@@ -22,6 +23,9 @@ const App = () => {
         <Route path="/client/login" element={<LoginPageClient />} />
         <Route path="/client/signup" element={<ClientSignup />} />
         <Route path="/client/dashboard" element={<ClientDashboard />} />
+        
+        {/* Cleaner Detail Page */}
+        <Route path="/cleaner/:id" element={<CleanerDetailPage />} />
         
         {/* Legacy route for backwards compatibility */}
         <Route path="/dashboard" element={<ClientDashboard />} />
