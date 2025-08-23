@@ -7,6 +7,7 @@ import CleanerSignup from './pages/CleanerSignup.jsx';
 import ClientSignup from './pages/ClientSignup.jsx';
 import ClientDashboard from './pages/ClientDashboard.jsx';
 import CleanerDetailPage from './pages/CleanerDetailPage.jsx';
+import CleanerDashboard from './pages/CleanerDashboard.jsx';
 
 const App = () => {
   return (
@@ -17,7 +18,7 @@ const App = () => {
         {/* Cleaner Routes */}
         <Route path="/cleaner/login" element={<LoginPageCleaner />} />
         <Route path="/cleaner/signup" element={<CleanerSignup />} />
-        <Route path="/cleaner/dashboard" element={<div>Cleaner Dashboard - Coming Soon</div>} />
+        <Route path="/cleaner/dashboard" element={<CleanerDashboard />} />
         
         {/* Client Routes */}
         <Route path="/client/login" element={<LoginPageClient />} />

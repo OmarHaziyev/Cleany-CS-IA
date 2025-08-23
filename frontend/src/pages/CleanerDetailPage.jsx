@@ -83,22 +83,26 @@ const CleanerDetailPage = () => {
     setBookingLoading(true);
 
     try {
-      // Here you would typically send the booking request to your backend
-      // For now, we'll just show a success message
       const bookingPayload = {
-        client: clientData._id,
-        cleaner: cleaner._id,
+        cleanerId: cleaner._id,
         service: bookingData.service,
         date: bookingData.date,
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
-        note: bookingData.note
+        note: bookingData.note,
+        requestType: 'specific'
       };
 
-      // This would be your booking API call
-      // const response = await axios.post('http://localhost:5001/api/reservations', bookingPayload);
+      // Create the request via API
+      const authToken = localStorage.getItem('authToken');
+      const response = await axios.post('http://localhost:5001/api/requests', bookingPayload, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      alert('Booking request sent successfully! The cleaner will be notified.');
+      alert('Booking request sent successfully! The cleaner will be notified and can accept or decline your request.');
       setShowBookingModal(false);
       setBookingData({
         service: '',
@@ -109,7 +113,11 @@ const CleanerDetailPage = () => {
       });
     } catch (err) {
       console.error('Error creating booking:', err);
-      alert('Failed to create booking. Please try again.');
+      if (err.response?.data?.message) {
+        alert(`Failed to create booking: ${err.response.data.message}`);
+      } else {
+        alert('Failed to create booking. Please try again.');
+      }
     } finally {
       setBookingLoading(false);
     }

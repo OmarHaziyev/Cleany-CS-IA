@@ -103,10 +103,15 @@ export async function loginClient(req, res) {
     }
 
     // Generate JWT token 
-    const token = jwt.sign(
-      { id: client._id }, 
-      process.env.JWT_SECRET,  // Use your secret key to sign the token
-    );
+const token = jwt.sign(
+  { 
+    id: client._id,
+    role: 'client',
+    username: client.username
+  }, 
+  process.env.JWT_SECRET,
+  { expiresIn: '24h' }
+);
 
     res.json({ token, client });
   } catch (err) {

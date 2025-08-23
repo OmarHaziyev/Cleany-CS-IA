@@ -126,32 +126,42 @@ const CleanerSignup = () => {
   };
 
   const validateStep = (step) => {
-    switch (step) {
-      case 1:
-        return formData.name && formData.username && formData.email && formData.password && formData.phoneNumber;
-      case 2:
-        // Age validation
-        const age = parseInt(formData.age);
-        const isValidAge = age >= 18 && age <= 80;
-        const hasValidPrice = parseFloat(formData.hourlyPrice) >= 5;
-        
-        if (!isValidAge) {
-          setError('Age must be between 18 and 80 years old.');
-          return false;
-        }
-        
-        if (!hasValidPrice) {
-          setError('Hourly price must be at least $5.');
-          return false;
-        }
-        
-        return formData.age && formData.gender && formData.hourlyPrice && formData.service.length > 0;
-      case 3:
-        return Object.values(formData.schedule).some(day => day.available);
-      default:
-        return true;
-    }
-  };
+  switch (step) {
+    case 1:
+      return formData.name && formData.username && formData.email && formData.password && formData.phoneNumber;
+    case 2:
+      // Age validation - FIXED: Check age first and return false with specific error
+      const age = parseInt(formData.age);
+      if (!formData.age || age < 18 || age > 80) {
+        setError('Age must be between 18 and 80 years old.');
+        return false;
+      }
+      
+      // Price validation
+      const hasValidPrice = parseFloat(formData.hourlyPrice) >= 5;
+      if (!formData.hourlyPrice || !hasValidPrice) {
+        setError('Hourly price must be at least $5.');
+        return false;
+      }
+      
+      // Check other required fields
+      if (!formData.gender || !formData.service.length) {
+        setError('Please fill in all required fields.');
+        return false;
+      }
+      
+      return true;
+    case 3:
+      const hasAvailableDay = Object.values(formData.schedule).some(day => day.available);
+      if (!hasAvailableDay) {
+        setError('Please set your availability for at least one day.');
+        return false;
+      }
+      return true;
+    default:
+      return true;
+  }
+};
 
   const nextStep = () => {
     if (validateStep(currentStep)) {

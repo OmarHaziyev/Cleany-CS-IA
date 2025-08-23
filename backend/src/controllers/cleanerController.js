@@ -105,7 +105,7 @@ export async function updateCleaner(req, res) { //tested
   }
 };
 
-export async function createCleaner(req, res) { //updated with schedule support
+export async function createCleaner(req, res) { 
     try {
     const { 
       name, 
@@ -117,16 +117,14 @@ export async function createCleaner(req, res) { //updated with schedule support
       service, 
       schedule, 
       scheduleType,
-      hourlyPrice 
+      hourlyPrice,
+      username
     } = req.body;
 
     // Validation
-    if (!name || !email || !password || !phoneNumber || !service || !gender || !age || !hourlyPrice || !schedule) {
+    if (!name || !email || !password || !phoneNumber || !service || !gender || !age || !hourlyPrice || !schedule || !username) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-
-    // Generate username from email if not provided
-    const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
 
     // Age validation
     if (age < 18 || age > 80) {
@@ -144,15 +142,22 @@ export async function createCleaner(req, res) { //updated with schedule support
       return res.status(400).json({ message: 'At least one day must be available in your schedule' });
     }
 
-    // Check if cleaner already exists
+    // Check if cleaner already exists with this username OR email
     const existingCleaner = await Cleaner.findOne({ 
       $or: [{ username }, { email }] 
     });
     
     if (existingCleaner) {
-      return res.status(400).json({ 
-        message: 'Cleaner with this email already exists' 
-      });
+      if (existingCleaner.username === username) {
+        return res.status(400).json({ 
+          message: 'Username already exists. Please choose a different username.' 
+        });
+      }
+      if (existingCleaner.email === email) {
+        return res.status(400).json({ 
+          message: 'Email already exists. Please use a different email.' 
+        });
+      }
     }
 
     // Hash the password before saving it to the database
@@ -160,7 +165,7 @@ export async function createCleaner(req, res) { //updated with schedule support
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const cleaner = new Cleaner({
-      username,
+      username, // Use the user-provided username directly
       password: hashedPassword,
       name,
       phoneNumber,
@@ -192,8 +197,10 @@ export async function createCleaner(req, res) { //updated with schedule support
     }
     
     if (err.code === 11000) {
+      // Handle duplicate key errors more specifically
+      const duplicateField = Object.keys(err.keyValue)[0];
       return res.status(400).json({ 
-        message: 'Email already exists' 
+        message: `${duplicateField} already exists. Please choose a different ${duplicateField}.`
       });
     }
     
