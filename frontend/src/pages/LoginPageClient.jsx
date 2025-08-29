@@ -43,8 +43,8 @@ const LoginPageClient = () => {
       // Show success message
       alert('Login successful!');
 
-      // Redirect to client dashboard
-      navigate('/client/dashboard');
+      // Redirect to client dashboard with id
+      navigate(`/client/dashboard/${response.data.client._id}`);
 
     } catch (err) {
       console.error('Login error:', err);

@@ -44,21 +44,23 @@
   font-size: 1.5rem;
 }
 
-/* Main Content Layout */
+/* Main Content Layout - Fixed Grid */
 .detail-content {
-  display: grid;
-  grid-template-columns: 400px 1fr;
+  display: flex;
   gap: 2rem;
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  align-items: flex-start;
 }
 
-/* Profile Section */
+/* Profile Section - Fixed Positioning */
 .profile-section {
   position: sticky;
   top: 120px;
   height: fit-content;
+  width: 400px;
+  flex-shrink: 0; /* Prevent it from shrinking */
 }
 
 .profile-card {
@@ -66,6 +68,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+  width: 100%; /* Full width within its container */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .profile-avatar {
@@ -173,6 +177,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .book-now-btn-large:hover {
@@ -180,11 +185,13 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Details Section */
+/* Details Section - Fixed to prevent overlap */
 .details-section {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  flex: 1; /* Takes remaining space */
+  min-width: 0; /* Prevents overflow issues */
 }
 
 .section-card {
@@ -192,6 +199,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section-card h3 {
@@ -221,6 +230,7 @@
 
 .service-icon {
   font-size: 1.2rem;
+  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
 .service-name {
@@ -358,6 +368,7 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
 }
 
 .reviewer-name {
@@ -464,6 +475,7 @@
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -614,11 +626,14 @@
   margin-bottom: 2rem;
 }
 
-/* Responsive Design */
+/* Responsive Design - Improved */
 @media (max-width: 1024px) {
   .detail-content {
-    grid-template-columns: 350px 1fr;
     gap: 1.5rem;
+  }
+  
+  .profile-section {
+    width: 350px;
   }
 }
 
@@ -628,17 +643,19 @@
   }
 
   .detail-content {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     padding: 1rem;
     gap: 1.5rem;
   }
 
   .profile-section {
     position: static;
+    width: 100%;
   }
 
   .profile-card {
     padding: 1.5rem;
+    width: 100%;
   }
 
   .avatar-large {

@@ -73,6 +73,12 @@ const requestSchema = new Schema({
       return this.requestType === 'general';
     }
   },
+  deadline: {
+    type: Date,
+    required: function() {
+      return this.requestType === 'general';
+    }
+  },
   acceptedAt: {
     type: Date
   },

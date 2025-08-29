@@ -43,8 +43,8 @@ const LoginPageCleaner = () => {
       // Show success message
       alert('Login successful!');
 
-      // Redirect to cleaner dashboard (you can create this route later)
-      navigate('/cleaner/dashboard');
+      // Redirect to cleaner dashboard with id
+      navigate(`/cleaner/dashboard/${response.data.cleaner._id}`);
 
     } catch (err) {
       console.error('Login error:', err);
